@@ -1,6 +1,6 @@
 from pyimagesearch.tempimage import TempImage
-from dropbox.client import DropboxOAuth2FlowNoRedirect
-from dropbox.client import DropboxClient
+#from dropbox.client import DropboxOAuth2FlowNoRedirect
+#from dropbox.client import DropboxClient
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 import argparse
@@ -40,7 +40,7 @@ motionCounter = 0
 
 for f in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
 	
-	fame = f.array
+	frame = f.array
 	timestamp = datetime.datetime.now()
 	text="Unoccupied"
 	frame = imutils.resize(frame, width=500)
@@ -64,7 +64,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True)
 		cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
 		text = "occupied"
 	ts = timestamp.strftime("%A %d %B %Y %I:%M:%S%p")
-	cv2.putText(frame, "Room status:{}".format(text),(10,20),cv2.FONT_HERSHEY_SIMPLE,0.5,(0,0,255),2)
+	cv2.putText(frame, "Room status:{}".format(text),(10,20),cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,0,255),2)
 	cv2.putText(frame, ts, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
 	if text == "occupied":
@@ -78,6 +78,10 @@ for f in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True)
 					path = "{base_path}/{timestamp}.jpg".format(base_path=conf["dropbox_base_path"],timestamp=ts)
 					client.put_file(path,open(t.path,"rb"))
 					t.cleanup()
+				else: 
+                                        t = TempImage()
+                                        cv2.imwrite(t.path,frame)
+					print "[Upload] {}".format(ts)
 				lastUploaded = timestamp
 				motionCounter = 0
 	else:
@@ -85,7 +89,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True)
 
 	if conf["show_video"]:
 		cv2.imshow("Security Feed", frame)
-		key = cv2.waitKey(1)&amp;0xFF
-		if key == ord("q")
+		key = cv2.waitKey(1)&0xFF
+		if key == ord("q"):
 			break
 	rawCapture.truncate(0)
